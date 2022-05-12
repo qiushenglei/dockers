@@ -1,0 +1,33 @@
+version: '3.3'
+services:
+  web:
+    image: nginx
+    volumes:
+      - ${NGINX_DIR}/nginx.conf:${CONTAINER_NGINX_DIR}/nginx.conf
+      - ${NGINX_DIR}/vhosts:${CONTAINER_NGINX_DIR}/vhosts
+      - ${NGINX_DIR}/logs:${CONTAINER_NGINX_DIR}/logs
+      - ${CODE_DIR}:/home/work
+    ports:
+      - 80:80
+      - 4586:4586
+    networks:
+      - program
+  php:
+    image: php
+    volumes:
+      - ${PHP_DIR}/php.ini:${CONTAINER_PHP_DIR}/php.ini
+    ports:
+      - 9000:9000
+    restart: always
+    stdin_open: true
+    tty: true
+    networks:
+      - program
+# volumes:
+#   code:
+#     type: volume
+#     source: /d/code
+#     target: /home/work/code
+networks:
+  program:
+    driver: bridge

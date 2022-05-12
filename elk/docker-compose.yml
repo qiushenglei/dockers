@@ -1,0 +1,39 @@
+version: '3.3'
+services:
+  es:
+    image: elasticsearch:7.10.1
+    container_name: es
+    environment:
+      # 我用的是windows的docker 没加这行，默认就是集群，疯狂报错，说是没找到主节点
+      - discovery.type=single-node
+     # - cluster.initial_master_nodes=es01
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - $PWD/data:/usr/share/elasticsearch/data
+      - $PWD/data/plugins:/usr/share/elasticsearch/plugins
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      #docker inspect container 查看网络信息  docker network inspect network_name 查看网卡信息(可以查看到什么容器挂载到该网卡)
+      - elastic
+  kibana:
+    image: kibana:7.10.1
+    environment:
+      SERVER_NAME: kibana
+      ELASTICSEARCH_HOSTS: http://es:9200
+    depends_on:
+      - es
+    ports:
+      - 5601:5601
+    networks:
+      #两个容器都用一个创建的网卡:那么ELASTICSEARCH_HOSTS: http://es:9200 这里就可以内网访问了(相当于es域名加了一个host)
+      - elastic
+networks:
+  elastic:
+    driver: bridge
+    
